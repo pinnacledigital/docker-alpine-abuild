@@ -4,12 +4,15 @@ This is a Docker image for building Alpine Linux packages.
 
 ## Usage
 
-We tag each release with a simple `v#` version scheme. Here are the tags to choose from:
+Build packages for any Alpine Linux release, specifying the target release in the Docker image tag:
 
-* `andyshinn/alpine-abuild:v1`: based on Alpine 3.3
-* `andyshinn/alpine-abuild:v2`: based on Alpine 3.4
-* `andyshinn/alpine-abuild:v3`: based on Alpine 3.5
-* `andyshinn/alpine-abuild:v4`: based on Alpine 3.6
+* `andyshinn/alpine-abuild:3.1`: based on Alpine 3.1
+* `andyshinn/alpine-abuild:3.2`: based on Alpine 3.2
+* `andyshinn/alpine-abuild:3.3`: based on Alpine 3.3
+* `andyshinn/alpine-abuild:3.4`: based on Alpine 3.4
+* `andyshinn/alpine-abuild:3.5`: based on Alpine 3.5
+* `andyshinn/alpine-abuild:3.6`: based on Alpine 3.6
+* `andyshinn/alpine-abuild:latest`: based on the most recent Alpine (currently 3.6)
 * `andyshinn/alpine-abuild:edge`: based on Alpine edge (includes testing repository as well)
 
 The builder is typically run from your Alpine Linux package source directory (changing `~/.abuild/mykey.rsa` and `~/.abuild/mykey.rsa.pub` to your packager private and public key locations):
@@ -21,7 +24,7 @@ docker run \
 	-v "$PWD:/home/builder/package" \
 	-v "$HOME/.abuild/packages:/packages" \
 	-v "$HOME/.abuild/mykey.rsa.pub:/etc/apk/keys/mykey.rsa.pub" \
-	andyshinn/alpine-abuild:v2
+	andyshinn/alpine-abuild:latest
 ```
 
 This would build the package at your current working directory, and place the resulting packages in `~/.abuild/packages/builder/x86_64`. Subsequent builds of packages will update the `~/.abuild/packages/builder/x86_64/APKINDEX.tar.gz` file.
@@ -43,7 +46,7 @@ There are a number of environment variables you can change at package build time
 You can use this image to generate keys if you don't already have them. Generate them in a container using the following command (replacing `Glider Labs <team@gliderlabs.com>` with your own name and email):
 
 ```
-docker run --name keys --entrypoint abuild-keygen -e PACKAGER="Glider Labs <team@gliderlabs.com>" andyshinn/alpine-abuild:v2 -n
+docker run --name keys --entrypoint abuild-keygen -e PACKAGER="Glider Labs <team@gliderlabs.com>" andyshinn/alpine-abuild:latest -n
 ```
 
 You'll see some output like the following:
@@ -77,8 +80,14 @@ docker cp keys:/home/builder/.abuild/team@gliderlabs.com-5592f9b1.rsa ~/.abuild/
 docker cp keys:/home/builder/.abuild/team@gliderlabs.com-5592f9b1.rsa.pub ~/.abuild/
 ```
 
-Put your key files in a same place and destroy this container:
+Put your key files in a safe place and destroy this container:
 
 ```
 docker rm -f keys
 ```
+
+Developer Note: The underlying alpine version is determined using the build argument VERSION, so:
+```
+docker build --build-arg VERSION=3.6
+```
+to build your image using Alpine Linu version 3.6
